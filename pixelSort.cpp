@@ -1,4 +1,9 @@
 #include "pixelSort.h"
+
+CannyParams::CannyParams():
+    lowThreshold(0)
+    {}
+
 cv::Mat splitThenSort(cv::Mat input)
 {
     cv::Mat output;
@@ -20,13 +25,12 @@ cv::Mat splitThenSort(cv::Mat input)
     return output;
 }
 
-cv::Mat cannyThreshold(cv::Mat input)
+cv::Mat cannyEdgeDetect(cv::Mat input, double lowThreshold)
 {
     cv::Mat output = cv::Mat(input.size(), input.type());
     cvtColor(input, output, CV_BGR2GRAY);
     blur(output, output, cv::Size(5,5));
-    cv::Canny(output, output, 80,240, 3);
-    cv::namedWindow("canny", 1);
+    cv::Canny(output, output, lowThreshold , lowThreshold * 3, 3);
     return output;
 }
 
@@ -107,11 +111,11 @@ cv::Mat partitionThenSort(cv::Mat input, cv::Mat edges)
     return output;
 }
 
-cv::Mat cannySortRow(cv::Mat input)
+cv::Mat cannySortRow(cv::Mat input, int cannyThresh)
 {
     cv::Mat output = cv::Mat(input.rows, input.cols, input.type());
     //cv::Mat output = input;
-    cv::Mat edges = cannyThreshold(input);
+    cv::Mat edges = cannyEdgeDetect(input, cannyThresh);
     
     for(int ii = 0; ii < input.rows; ii++)
     {
@@ -122,11 +126,11 @@ cv::Mat cannySortRow(cv::Mat input)
     return output;
 }
 
-cv::Mat cannySortColumn(cv::Mat input)
+cv::Mat cannySortColumn(cv::Mat input, int cannyThresh)
 {
     cv::Mat output = cv::Mat(input.rows, input.cols, input.type());
     //cv::Mat output = input;
-    cv::Mat edges = cannyThreshold(input);
+    cv::Mat edges = cannyEdgeDetect(input, cannyThresh);
     
     for(int ii = 0; ii < input.cols; ii++)
     {
