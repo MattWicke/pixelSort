@@ -40,7 +40,7 @@ void StateMachine::loadSourceImages(std::string fileName)
 
 void StateMachine::edgeTuningPhase()
 {
-    cv::namedWindow("edges", 1);
+    cv::namedWindow("edges", CV_WINDOW_NORMAL);
     cparams.edges = cannyEdgeDetect(cparams.source, cparams.lowThreshold);
     cv::createTrackbar("Min Threshold:"
                         , "edges"
@@ -57,7 +57,7 @@ void StateMachine::edgeTuningPhase()
 void StateMachine::displayResultsPhase()
 {
     processedImage = cannySortColumn(cparams.source, cparams.lowThreshold);
-    cv::namedWindow("sorted", 1);
+    cv::namedWindow("sorted", CV_WINDOW_NORMAL);
     cv::imshow("sorted", processedImage);
     key = cv::waitKey(0);
     cv::destroyWindow("sorted");
@@ -84,10 +84,10 @@ void StateMachine::run()
     }
 }
 
-int main(int argc, char* arg[])
+int main(int argc, char* argv[])
 {
     StateMachine sm;
-    sm.loadSourceImages("japan.jpg");
+    sm.loadSourceImages(std::string(argv[1]));
     sm.run();
     return 0;
 }
