@@ -18,24 +18,37 @@ void trackBarCallback(int, void* dataPtr)
 class StateMachine
 {
 public:
+    enum Mode
+    {
+        HORZ,
+        VERT
+    }mode;
     StateMachine();
     void loadSourceImages(std::string fileName);
     void saveResults();
     void edgeTuningPhase();
     void displayResultsPhase();
     void run();
+    void process();
+    void setMode(Mode nMode);
     cv::Mat processedImage;
     CannyParams cparams;
     char key;
 };
 
 StateMachine::StateMachine():
-    key(0)
+    key(0),
+    mode(HORZ)
     {}
 
 void StateMachine::loadSourceImages(std::string fileName)
 {
     cparams.source= cv::imread(fileName);
+}
+
+void StateMachine::setMode(StateMachine::Mode nMode)
+{
+    mode = nMode;
 }
 
 void StateMachine::edgeTuningPhase()
@@ -54,9 +67,22 @@ void StateMachine::edgeTuningPhase()
     cv::destroyWindow("edges");
 }
 
+void StateMachine::process()
+{
+    switch(mode)
+    {
+        case VERT:
+            processedImage = cannySortColumn(cparams.source, cparams.lowThreshold);
+        break;
+
+        case HORZ:
+            processedImage = cannySortRow(cparams.source, cparams.lowThreshold);
+        break;
+    }
+}
+
 void StateMachine::displayResultsPhase()
 {
-    processedImage = cannySortColumn(cparams.source, cparams.lowThreshold);
     cv::namedWindow("sorted", CV_WINDOW_NORMAL);
     cv::imshow("sorted", processedImage);
     key = cv::waitKey(0);
@@ -78,7 +104,16 @@ void StateMachine::run()
         edgeTuningPhase();
         if(key =='q')
             break;
+        if(key =='h')
+            setMode(HORZ);
+        if(key =='v')
+            setMode(VERT);
+        process();
         displayResultsPhase();
+        if(key =='h')
+            setMode(HORZ);
+        if(key =='v')
+            setMode(VERT);
         if(key =='s')
             saveResults();
     }
@@ -88,6 +123,20 @@ int main(int argc, char* argv[])
 {
     StateMachine sm;
     sm.loadSourceImages(std::string(argv[1]));
+    
+    if(argc > 2)
+    {
+        switch(argv[2][0])
+        {
+            case 'h':
+            sm.setMode(StateMachine::HORZ);
+            break;
+
+            case 'v':
+            sm.setMode(StateMachine::VERT);
+            break;
+        }
+    }
     sm.run();
     return 0;
 }
